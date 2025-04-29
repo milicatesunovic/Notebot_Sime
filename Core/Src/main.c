@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "../Lib/Motori/motori.h"
+#include "../Lib/Odometrija/odometrija.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +46,8 @@
 
 /* USER CODE BEGIN PV */
 volatile uint32_t stanje_senzora=0;
+volatile uint16_t ir1=0;
+volatile uint16_t ir2=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,14 +75,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-
-  /* System interrupt init*/
-  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-
-  /* SysTick_IRQn interrupt configuration */
-  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -95,9 +91,28 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM6_Init();
+  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM15_Init();
+  MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
+  LL_TIM_EnableCounter(TIM1);
+  LL_TIM_EnableCounter(TIM2);
  LL_TIM_EnableIT_UPDATE(TIM6);
  LL_TIM_EnableCounter(TIM6);
+
+// HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
+// TIM15->CCR1 = TIM15->ARR/2;
+//
+// HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+//  TIM16->CCR1 = TIM16->ARR/2;
+
+
+
+  odometrija_init();
+
+  //motor1_init(1,70); //npr
+  //motor2_init(1,70);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -105,10 +120,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
- if(LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_0)==1){
-	 //kada je cinc unutra onda je 1, a kada ga izvucemo onda je 0
-	 stanje_senzora++;
- }
 
     /* USER CODE BEGIN 3 */
   }
@@ -156,10 +167,13 @@ void SystemClock_Config(void)
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
-
-  LL_Init1msTick(80000000);
-
   LL_SetSystemCoreClock(80000000);
+
+   /* Update the time base */
+  if (HAL_InitTick (TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */

@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+ /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    stm32l4xx_it.c
@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l4xx_it.h"
+#include "../Lib/PID/pid.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -42,6 +43,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 volatile uint32_t sys_time = 0;
+volatile int16_t brzina_1 = 0;
+volatile int16_t poz_1 = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -185,7 +188,7 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-
+  HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -209,6 +212,12 @@ void TIM6_DAC_IRQHandler(void)
 	 LL_TIM_ClearFlag_UPDATE(TIM6);
 
 	 sys_time ++;
+	 odometrija();
+
+
+	 pid_brzina_m1(3.5);
+	pid_brzina_m2(3.5);
+
  }
   /* USER CODE END TIM6_DAC_IRQn 0 */
 
