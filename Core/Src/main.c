@@ -45,9 +45,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint32_t stanje_senzora=0;
-volatile uint16_t ir1=0;
-volatile uint16_t ir2=0;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

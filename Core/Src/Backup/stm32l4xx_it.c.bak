@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+ /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    stm32l4xx_it.c
@@ -19,8 +19,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "../Lib/Odometrija/odometrija.h"
 #include "stm32l4xx_it.h"
+#include "../Lib/Odometrija/odometrija.h"
 #include "../Lib/PID/pid.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -216,9 +216,20 @@ void TIM6_DAC_IRQHandler(void)
 	 odometrija();
 
 
-	// pid_brzina_m1(3.5);
-	 //pid_brzina_m2(3.5);
+//	pid_brzina_m1(3);
+//	pid_brzina_m2(3);
 
+
+	kretanje_lin(1000, 0, 0);
+	//kretanje_lin(650,0,0);
+	//kretanje_lin(0, 0, 0);
+
+
+		LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_1);
+
+
+	 //kretanje_rot(100,100,90);
+    //celo_kretanje(1160, 0, 0);
  }
   /* USER CODE END TIM6_DAC_IRQn 0 */
 

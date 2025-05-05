@@ -27,6 +27,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 /* USER CODE BEGIN Includes */
 
@@ -47,6 +49,8 @@ void MX_TIM15_Init(void);
 void MX_TIM16_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
+bool timer_delay (uint32_t ms);
 
 /* USER CODE BEGIN Prototypes */
 int16_t tim1_brzina();

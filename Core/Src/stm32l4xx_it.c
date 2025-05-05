@@ -1,4 +1,4 @@
- /* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    stm32l4xx_it.c
@@ -20,7 +20,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l4xx_it.h"
+#include "tim.h"
 #include "../Lib/PID/pid.h"
+#include "../Lib/Odometrija/odometrija.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -45,6 +47,9 @@
 volatile uint32_t sys_time = 0;
 volatile int16_t brzina_1 = 0;
 volatile int16_t poz_1 = 0;
+volatile uint32_t cinc=0;
+volatile uint16_t ir1=0;
+volatile uint16_t ir2=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -210,14 +215,80 @@ void TIM6_DAC_IRQHandler(void)
  if (LL_TIM_IsActiveFlag_UPDATE(TIM6))
  {
 	 LL_TIM_ClearFlag_UPDATE(TIM6);
+	 cinc = LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_0);
+     ir1 = LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_6);
+	 ir2 = LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_7);
 
-	 sys_time ++;
-	 odometrija();
+	 while (cinc==0) {
+		 sys_time ++;
 
 
-	 pid_brzina_m1(3.5);
-	pid_brzina_m2(3.5);
+		odometrija();
+		 pid_brzina_m1(0.5);
+		 pid_brzina_m2(3);
+		// motor_zastavica();
 
+
+		/* if((ir1==1) || (ir2==1) )
+		 {
+			 pid_brzina_m1(0);
+			 pid_brzina_m2(0);
+		 }*/
+
+	 }
+
+
+
+
+	// odometrija();
+	//volatile float pp = predjeni_put();
+
+
+	//pid_brzina_m1(3);
+	//pid_brzina_m2(3);
+	// kretanje_lin(1500, 0, 0);
+
+   // pid_brzina_m1(0.5);
+    //pid_brzina_m2(0.5);
+
+
+
+
+/*
+	if (pp <=200){
+	    pid_brzina_m2(1);
+	    pid_brzina_m1(1);
+
+	}
+
+
+	else if (pp >200 && pp <= 500) {
+
+		pid_brzina_m1(1);
+	    pid_brzina_m2(1);
+	}
+
+
+	else if (pp > 500) {
+		pid_brzina_m1(0);
+	    pid_brzina_m2(0);
+	}
+
+*/
+
+
+	//kretanje_lin(3000, 0, 0);
+	 //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_1);
+
+	//kretanje_lin(650,0,0);
+	//kretanje_lin(0, 0, 0);
+
+
+
+
+
+	 //kretanje_rot(100,100,90);
+    //celo_kretanje(1160, 0, 0);
  }
   /* USER CODE END TIM6_DAC_IRQn 0 */
 

@@ -33,6 +33,7 @@ static float y=0;
 
 static float inc2mm;
 
+
 void odometrija_init() {
 	    R = 82.5;
 		b = 128.60;
@@ -47,13 +48,15 @@ void odometrija() {
 	vd_inc=tim1_brzina();
 	vl_inc = tim2_brzina();
 
-//	vd = ((float)vd_inc /2184.0) *1000.0; //(float) vd_inc * inc2mm;
+	vd = ((float)vd_inc /2184.0)*1000; //(float) vd_inc * inc2mm;
 //	vd_mm = (float) vd_inc * 3.14*R;
-//	vl = ((float)vl_inc /2184.0) *1000.0; //(float) vl_inc * inc2mm;
+	vl = ((float)vl_inc /2184.0) *1000; //(float) vl_inc * inc2mm;
 //	vl_mm = (float) vl_inc * 3.14*R;
 
 	vd_mm = (float) vd_inc * inc2mm;
 	vl_mm = (float) vl_inc * inc2mm;
+	//vd=vd_mm;
+	//vl=vl_mm;
 
 	V = (vd_mm + vl_mm) / 2.0;
 	w = (vd_mm - vl_mm) / b;
@@ -63,7 +66,7 @@ void odometrija() {
 //  x  += (V * cos(fi_deg));
 //  y  += (V * sin(fi_deg));
 //	fi_deg = fi * 57.2957795;
-	x += (V * cos(fi));
+	x += (V* cos(fi));
 	y += (V * sin(fi));
 }
 
@@ -87,10 +90,10 @@ float odom_fi_deg(){
 
 float odometrija_brzina_d()
 {
-	return vd;
+	return vd_mm;
 }
 
 float odometrija_brzina_l()
 {
-	return vl;
+	return vl_mm;
 }

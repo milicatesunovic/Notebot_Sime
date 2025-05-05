@@ -28,6 +28,8 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -54,6 +56,7 @@ int16_t tim1_brzina();
 
 
 int16_t tim2_brzina();
+
 
 
 

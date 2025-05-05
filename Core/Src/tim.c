@@ -19,8 +19,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "tim.h"
+#include <stdbool.h>
 
 /* USER CODE BEGIN 0 */
+
+extern volatile  uint32_t sys_time;
 
 /* USER CODE END 0 */
 
@@ -400,7 +403,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 int16_t tim1_brzina() {
     int16_t brzina = (int16_t)(TIM1->CNT);
     TIM1->CNT = 0;  // Reset brojača za sledeće očitavanje brzine
-    return brzina;
+    return -brzina;
 }
 
 
@@ -408,6 +411,27 @@ int16_t tim2_brzina() {
     int16_t brzina = (int16_t)(TIM2->CNT);
     TIM2->CNT = 0;  // Reset brojača za sledeće očitavanje brzine
     return brzina;
+}
+
+bool timer_delay (uint32_t ms) // ms - milisekunde
+{
+  static uint32_t start ; // Sačuvano vreme ulaska u funkciju.
+  static bool flag = true;
+
+  if (flag)
+  {
+	  start = sys_time;
+	  flag = false;
+  }
+
+  if ((start + ms) > sys_time)
+    {
+      return false;
+    }
+
+  flag = true;
+
+  return true;
 }
 
 

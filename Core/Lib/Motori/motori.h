@@ -13,6 +13,7 @@
 // Deklaracija funkcije
 void motor1_init(uint8_t smijer, uint16_t faktor_ispune);
 void motor2_init(uint8_t smijer, uint16_t faktor_ispune);
+void motor_zastavica();
 
 
 

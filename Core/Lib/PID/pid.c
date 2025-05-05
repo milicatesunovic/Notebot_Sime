@@ -6,6 +6,7 @@
  */
 #include "pid.h"
 #include <math.h>
+#include <stdint.h>
 #include <tim.h>
 #include "stm32l432xx.h"
 #include "../Odometrija/odometrija.h"
@@ -13,8 +14,11 @@
 #include"../Lib/Motori/motori.h"
 
 //ovo zakomentarisano je Rakiceva vrijednost za parametre, ti skontaj sta ti treba
-static float kp = 300; //400
-static float ki = 0.2; //0.35
+static float kp1 = 9250; //400
+static float ki1 = 0.02; //0.35
+
+static float kp2 = 4900; //400 //6000
+static float ki2 = 0.02; //0.35
 
 //promjenjive za motor1 u pid brzine1
 static float e_m1 = 0.0;
@@ -38,7 +42,10 @@ static float u_m2 = 0.0;
 
 //provera smijera obrtanja motora
 static uint16_t temp_pid = 0;
+static uint16_t temp_pid_2 = 0;
 static uint8_t smer = 0;
+
+float udeo_brzine = 0.0 ;
 
 static float s1 = 0.0;
 static float s2 = 0.0;
@@ -53,6 +60,7 @@ static float teta = 0.0;//koordinata ugla referentne tacke u koordinatnom sistem
 
 float rastojanje_robota = 0.0; //rastojanje robota od referentne tacke
 float rastojanje_robota_fi = 0.0;
+volatile float brzine_pid_fajl = 0.0;
 
 volatile extern uint32_t sys_time;
 
@@ -75,9 +83,10 @@ static float u_fi = 0.0;
 static float u_d_fi = 0.0;
 static float u_p_fi = 0.0;
 static float u_i_fi = 0.0;
-static float kp_fi = 50.0;
-static float kd_fi = 0.01;
-static float ki_fi = 20.0;
+static float kp_fi = 55.0; //50.0
+static float kd_fi = 0.01; //0.01
+static float ki_fi = 30.0; //20.0
+//static float fi_ref;
 
 uint8_t flag_stanje_kretanja = 1;
 
@@ -94,7 +103,7 @@ float fi_treca_faza = 0.0;
 float rastojanje_pid_fajl = 0.0;
 float predjeni_put_linearno = 0.0;
 float predjeni_put_fi_prom = 0.0;
-float brzine_pid_fajl = 0.0;
+//float brzine_pid_fajl = 0.0;
 float rastojanje_rob_linearno = 0.0;
 
 
@@ -102,7 +111,7 @@ uint8_t flag_sledece_kretanje = 0;
 
 uint8_t broj_puta = 0;
 
-float udeo_brzine = 0.0 ;
+
 
 int8_t n = 0;
 
@@ -113,16 +122,18 @@ void pid_brzina_m1(float ref)
 	merena_m1 = odometrija_brzina_d();
 	e_m1 =  ref  - merena_m1;
 
-	u_p_m1 = kp * (e_m1 - e_pre_m1);
-	u_i_m1 = ki * e_m1;
-	u_m1 = u_m1 + u_p_m1 + u_i_m1;
+	//float u_fi_funkc = pd_regulacija(fi_ref);
+
+	u_p_m1 = kp1 * (e_m1 - e_pre_m1);
+	u_i_m1 = ki1 * e_m1;
+	u_m1 = u_m1 + u_p_m1 + u_i_m1; // samo dodata pd_regulacija koja ugao odrzava konstantnim
 
 	e_pre_m1 = e_m1;
 
 	//saturacija, counter period za TIM15 i TIM16 je 100-1
-	if(u_m1 > 1999)
+	if(u_m1 > 1999.0)
 	{
-		u_m1 = 1999;
+		u_m1 = 1999.0;
 	}
 	else if(u_m1 < -1999.0)
 	{
@@ -131,17 +142,26 @@ void pid_brzina_m1(float ref)
 
 	if(u_m1 > 0)
 	{
-		smer = 2;
+		smer = 1;
 	}
 	else
 	{
 
-		smer = 1;
+		smer = 2;
 	}
 
 	//TIM16->CCR2 = (uint16_t)fabs(u_m1+2000.0);
+
+	if(ref<0.1)
+	{
+		temp_pid=0;
+	}
+	else
+	{
 	temp_pid = (uint16_t)fabs(u_m1+2000.0);
+	}
 	motor1_init(smer, temp_pid);
+
 }
 
 void pid_brzina_m2(float ref)
@@ -149,8 +169,8 @@ void pid_brzina_m2(float ref)
 	merena_m2 = odometrija_brzina_l();
 	e_m2 =  ref  - merena_m2;
 
-	u_p_m2 = kp * (e_m2 - e_pre_m2);
-	u_i_m2 = ki * e_m2;
+	u_p_m2 = kp2 * (e_m2 - e_pre_m2);
+	u_i_m2 = ki2 * e_m2;
 	u_m2 = u_m2 + u_p_m2 + u_i_m2;
 
 	e_pre_m2 = e_m2;
@@ -174,8 +194,16 @@ void pid_brzina_m2(float ref)
 		smer = 2;
 	}
 
-	temp_pid = (uint16_t)fabs(u_m1+2000.0);
-		motor2_init(smer, temp_pid);
+	if(ref<0.1)
+		{
+			temp_pid_2=0;
+		}
+		else
+		{
+		temp_pid_2 = (uint16_t)fabs(u_m1+2000.0);
+		}
+		motor2_init(smer, temp_pid_2);
+
 }
 
 float racunanje_rastojanja(float reftx, float refty){ //rtx - x koordinnata referentne tacke u globalnom ks stola / rty - ...
@@ -268,7 +296,7 @@ float sinteza_trejktorije(float ubrzanje, float max_brzina, float rastojenje, fl
 	predjeni_put = predjeni_put / 1000.0;
 
 	if(predjeni_put <= s1){
-		brzine_motora = sqrt(2.0 * predjeni_put * ubrzanje) + 0.01;
+		brzine_motora = sqrt(2.0 * predjeni_put * ubrzanje) + 0.1;
 		brzine_motora = 1000.0 * (brzine_motora / (M_PI * 82.5));
 
 		return brzine_motora;
@@ -403,7 +431,7 @@ void kretanje(float referenca_x, float referenca_y, float orjentacija){
 
 		if(sys_time % 15 == 0){
 					predjeni_put_fi_prom = predjeni_put_fi();
-					brzine_pid_fajl =  sinteza_trajektorije_rotacija(3500, 300, fi_prva_faza, predjeni_put_fi_prom);
+					brzine_pid_fajl =  sinteza_trajektorije_rotacija(3500, 3.5, fi_prva_faza, predjeni_put_fi_prom);
 				}
 
 
@@ -461,7 +489,7 @@ void kretanje_rot(float referenca_x, float referenca_y, float orjentacija){
 			        // za ugao 90 ubrzanje 3500 brzina 450
 			        // za ugao 45 ubrzanje 3500 brzina 300
 					predjeni_put_fi_prom = predjeni_put_fi();
-					brzine_pid_fajl =  sinteza_trajektorije_rotacija(3500, 300, fi_prva_faza, predjeni_put_fi_prom);
+					brzine_pid_fajl =  sinteza_trajektorije_rotacija(0.9, 3.5, fi_prva_faza, predjeni_put_fi_prom);
 				}
 
 
@@ -479,6 +507,8 @@ void kretanje_rot(float referenca_x, float referenca_y, float orjentacija){
 }
 void kretanje_lin(float referenca_x, float referenca_y, float orjentacija){
 
+	//fi_ref = odom_fi_deg(); // nova linija koda
+
 	if(flag_stanje_kretanja == 2){
 		if(flag_podaci == 2){
 			start_x();
@@ -493,12 +523,15 @@ void kretanje_lin(float referenca_x, float referenca_y, float orjentacija){
         }
 	   if(sys_time % 15 == 0){
 		    predjeni_put_linearno = predjeni_put();
-		    brzine_pid_fajl = sinteza_trejktorije(0.785, 2.5 , rastojanje_rob_linearno, predjeni_put_linearno);
+		    brzine_pid_fajl = sinteza_trejktorije(0.9, 3.5 , rastojanje_rob_linearno, predjeni_put_linearno);
+		   //brzine_pid_fajl*=smer_lin;
+		    //temp_pid=smer_lin*pid_brzine_fajl;
 		    udeo_brzine = pd_regulacija(orjentacija);
 	    }
 
 
 	   if(rastojanje_rob_linearno - predjeni_put_linearno > 15){
+		   //temp_pid=smer_lin*brzine_pid_fajl;
 		   pid_brzina_m1((brzine_pid_fajl + udeo_brzine));
 		   pid_brzina_m2((brzine_pid_fajl - udeo_brzine));
 	   }

@@ -1,8 +1,8 @@
-../Core/Lib/Odometrija/odometrija.c:36:6:odometrija_init	1
-../Core/Lib/Odometrija/odometrija.c:46:6:odometrija	1
-../Core/Lib/Odometrija/odometrija.c:72:7:odom_x	1
-../Core/Lib/Odometrija/odometrija.c:76:7:odom_y	1
-../Core/Lib/Odometrija/odometrija.c:80:7:odom_fi	1
-../Core/Lib/Odometrija/odometrija.c:84:7:odom_fi_deg	1
-../Core/Lib/Odometrija/odometrija.c:88:7:odometrija_brzina_d	1
-../Core/Lib/Odometrija/odometrija.c:93:7:odometrija_brzina_l	1
+../Core/Lib/Odometrija/odometrija.c:37:6:odometrija_init	1
+../Core/Lib/Odometrija/odometrija.c:47:6:odometrija	1
+../Core/Lib/Odometrija/odometrija.c:75:7:odom_x	1
+../Core/Lib/Odometrija/odometrija.c:79:7:odom_y	1
+../Core/Lib/Odometrija/odometrija.c:83:7:odom_fi	1
+../Core/Lib/Odometrija/odometrija.c:87:7:odom_fi_deg	1
+../Core/Lib/Odometrija/odometrija.c:91:7:odometrija_brzina_d	1
+../Core/Lib/Odometrija/odometrija.c:96:7:odometrija_brzina_l	1
